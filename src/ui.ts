@@ -1,48 +1,79 @@
+import { style } from "./colors.ts";
 import { unitSymbol } from "./types.ts";
 import type { City, CurrentWeather, TemperatureUnit } from "./types.ts";
 
 const MENU_WIDTH = 40;
-const TITLE_INDENT = " ".repeat(9);
 const INDENT = "  ";
 const SEPARATOR = "═".repeat(MENU_WIDTH);
 
+/** Paleta de la interfaz. Para cambiar el aspecto, editar solo este mapa. */
+const paint = {
+  menu: (text: string) => style(text, "cyan"),
+  title: (text: string) => style(text, "bold", "cyan"),
+  temperature: (text: string) => style(text, "bold", "yellow"),
+  city: (text: string) => style(text, "bold"),
+  defaultMarker: (text: string) => style(text, "dim", "yellow"),
+  success: (text: string) => style(text, "green"),
+  error: (text: string) => style(text, "red"),
+  info: (text: string) => style(text, "cyan"),
+};
+
+function titleLine(title: string): string {
+  const padding = Math.max(0, Math.floor((MENU_WIDTH - title.length) / 2));
+  return " ".repeat(padding) + paint.title(title);
+}
+
+function menuOption(key: string, label: string): string {
+  return `${INDENT}${paint.menu(key)}. ${label}`;
+}
+
+function renderMenu(title: string, body: readonly string[]): void {
+  const lines = [
+    "",
+    paint.menu(SEPARATOR),
+    titleLine(title),
+    paint.menu(SEPARATOR),
+    ...body,
+    paint.menu(SEPARATOR),
+  ];
+  console.log(lines.join("\n"));
+}
+
 export function displayMenu(cityCount: number, unit: TemperatureUnit): void {
-  console.log(
-    `\n${SEPARATOR}\n${TITLE_INDENT}WEATHER CLI\n${SEPARATOR}\n`
-    + `${INDENT}1. Clima de ciudad default\n`
-    + `${INDENT}2. Clima de todas las ciudades (${cityCount})\n`
-    + `${INDENT}3. Buscar y agregar ciudad\n`
-    + `${INDENT}4. Eliminar ciudad\n`
-    + `${INDENT}5. Establecer ciudad default\n`
-    + `${INDENT}8. Ajustes (${unitSymbol(unit)})\n`
-    + `${INDENT}9. Salir\n`
-    + `${SEPARATOR}`,
-  );
+  renderMenu("WEATHER CLI", [
+    menuOption("1", "Clima de ciudad default"),
+    menuOption("2", `Clima de todas las ciudades (${cityCount})`),
+    menuOption("3", "Buscar y agregar ciudad"),
+    menuOption("4", "Eliminar ciudad"),
+    menuOption("5", "Establecer ciudad default"),
+    menuOption("8", `Ajustes (${unitSymbol(unit)})`),
+    menuOption("9", "Salir"),
+  ]);
 }
 
 export function displaySettingsMenu(unit: TemperatureUnit): void {
   const alternativeUnit: TemperatureUnit = unit === "celsius" ? "fahrenheit" : "celsius";
-  console.log(
-    `\n${SEPARATOR}\n${TITLE_INDENT}AJUSTES\n${SEPARATOR}\n`
-    + `${INDENT}Unidad de temperatura actual: ${unitSymbol(unit)}\n`
-    + `${INDENT}1. Cambiar unidad a ${unitSymbol(alternativeUnit)}\n`
-    + `${INDENT}2. Volver\n`
-    + `${SEPARATOR}`,
-  );
+  renderMenu("AJUSTES", [
+    `${INDENT}Unidad de temperatura actual: ${unitSymbol(unit)}`,
+    menuOption("1", `Cambiar unidad a ${unitSymbol(alternativeUnit)}`),
+    menuOption("2", "Volver"),
+  ]);
 }
 
 export function displayCityList(cities: readonly City[], defaultCityId: number | null): void {
   console.log(`\n  Ciudades guardadas (${cities.length}):`);
   for (const [index, city] of cities.entries()) {
-    const marker = defaultCityId === city.id ? " (default)" : "";
-    console.log(`${INDENT}${index + 1}. ${formatCity(city)}${marker}`);
+    const marker = defaultCityId === city.id ? paint.defaultMarker(" (default)") : "";
+    console.log(`${INDENT}${paint.menu(String(index + 1))}. ${formatCity(city)}${marker}`);
   }
   console.log();
 }
 
 export function displayCityWeather(city: City, weather: CurrentWeather): void {
-  console.log(`\n  ${formatCity(city)}`);
-  console.log(`  Temperatura actual: ${weather.temperature} ${weather.unitSymbol}`);
+  console.log(`\n  ${paint.city(formatCity(city))}`);
+  console.log(
+    `  Temperatura actual: ${paint.temperature(`${weather.temperature} ${weather.unitSymbol}`)}`,
+  );
 }
 
 export function formatCity(city: City): string {
@@ -53,19 +84,19 @@ export function formatCity(city: City): string {
 }
 
 export function printError(message: string): void {
-  console.error(`\n  ✖ ${message}`);
+  console.error(`\n  ${paint.error(`✖ ${message}`)}`);
 }
 
 export function printInfo(message: string): void {
-  console.log(`\n  ℹ ${message}`);
+  console.log(`\n  ${paint.info(`ℹ ${message}`)}`);
 }
 
 export function printSuccess(message: string): void {
-  console.log(`\n  ✔ ${message}`);
+  console.log(`\n  ${paint.success(`✔ ${message}`)}`);
 }
 
 export function displayGoodbye(): void {
-  console.log("\n  ¡Hasta pronto!\n");
+  console.log(`\n  ${paint.title("¡Hasta pronto!")}\n`);
 }
 
 export function ask(label: string): string | null {

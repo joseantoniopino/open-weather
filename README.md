@@ -34,7 +34,7 @@ Esta es la apariencia que deseamos crear
 
 ```text
 ════════════════════════════════════════
-         WEATHER CLI
+              WEATHER CLI
 ════════════════════════════════════════
   1. Clima de ciudad default
   2. Clima de todas las ciudades (1)
