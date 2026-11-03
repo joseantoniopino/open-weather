@@ -1,4 +1,4 @@
-import { ApiError, CityNotFoundError, getWeather, searchCity } from "./src/api.ts";
+import { ApiError, CityNotFoundError, getWeather, searchCities } from "./src/api.ts";
 import {
   addCity,
   findCityById,
@@ -17,6 +17,7 @@ import {
   displayCityWeather,
   displayGoodbye,
   displayMenu,
+  displaySearchResults,
   displaySettingsMenu,
   formatCity,
   printError,
@@ -134,7 +135,12 @@ async function addCityInteractive(config: AppConfig): Promise<void> {
     printInfo("Búsqueda cancelada.");
     return;
   }
-  const city = await searchCity(cityName);
+  const matches = await searchCities(cityName);
+  const city = matches.length === 1 ? matches[0] : await chooseCity(matches, cityName);
+  if (!city) {
+    printInfo("Búsqueda cancelada.");
+    return;
+  }
   const result = addCity(config, city);
   if (!result.added) {
     printError("Esa ciudad ya está guardada. Usa la opción 2 para verla.");
@@ -145,6 +151,15 @@ async function addCityInteractive(config: AppConfig): Promise<void> {
   if (result.promotedToDefault) {
     printInfo(`Se estableció como ciudad default: ${formatCity(city)}`);
   }
+}
+
+async function chooseCity(matches: readonly City[], cityName: string): Promise<City | null> {
+  displaySearchResults(matches, cityName);
+  const selected = askNumberChoice("  Número de la ciudad (vacío para cancelar): ", matches.length);
+  if (selected === null) {
+    return null;
+  }
+  return matches[selected - 1] ?? null;
 }
 
 async function removeCityInteractive(config: AppConfig): Promise<void> {

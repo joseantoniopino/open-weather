@@ -4,6 +4,7 @@ import type { City, CurrentWeather, TemperatureUnit } from "./types.ts";
 const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const REQUEST_TIMEOUT_MS = 10_000;
+const GEOCODING_RESULT_LIMIT = 10;
 
 const NETWORK_ERROR_MESSAGE =
   "No se pudo conectar con Open-Meteo. Revisa tu conexión a internet e inténtalo de nuevo.";
@@ -71,14 +72,17 @@ async function requestJson(url: URL): Promise<unknown> {
   }
 }
 
-export async function searchCity(rawName: string): Promise<City> {
+/** Resultados no vacíos de una búsqueda de ciudad. */
+export type CityMatches = [City, ...City[]];
+
+export async function searchCities(rawName: string): Promise<CityMatches> {
   const cityName = rawName.trim();
   if (cityName.length === 0) {
     throw new CityNotFoundError("");
   }
   const url = new URL(GEOCODING_URL);
   url.searchParams.set("name", cityName);
-  url.searchParams.set("count", "1");
+  url.searchParams.set("count", String(GEOCODING_RESULT_LIMIT));
   url.searchParams.set("language", "es");
   url.searchParams.set("format", "json");
   const data = assertRecord(await requestJson(url), "La respuesta de geocoding");
@@ -86,20 +90,24 @@ export async function searchCity(rawName: string): Promise<City> {
   if (!Array.isArray(results) || results.length === 0) {
     throw new CityNotFoundError(cityName);
   }
-  const first = results[0];
+  const cities = results.map((item) => parseCityResult(assertRecord(item, "El resultado de geocoding")));
+  const [first, ...rest] = cities;
   if (!first) {
     throw new CityNotFoundError(cityName);
   }
-  const firstRecord = assertRecord(first, "El resultado de geocoding");
-  const id = assertNumber(firstRecord["id"], "el identificador de la ciudad");
-  const name = assertString(firstRecord["name"], "el nombre de la ciudad");
-  const latitude = assertNumber(firstRecord["latitude"], "la latitud");
-  const longitude = assertNumber(firstRecord["longitude"], "la longitud");
+  return [first, ...rest];
+}
+
+function parseCityResult(value: Record<string, unknown>): City {
+  const id = assertNumber(value["id"], "el identificador de la ciudad");
+  const name = assertString(value["name"], "el nombre de la ciudad");
+  const latitude = assertNumber(value["latitude"], "la latitud");
+  const longitude = assertNumber(value["longitude"], "la longitud");
   return {
     id,
     name,
-    admin1: asOptionalString(firstRecord["admin1"]),
-    country: asOptionalString(firstRecord["country"]),
+    admin1: asOptionalString(value["admin1"]),
+    country: asOptionalString(value["country"]),
     latitude,
     longitude,
   };

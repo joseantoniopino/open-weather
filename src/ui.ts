@@ -61,10 +61,23 @@ export function displaySettingsMenu(unit: TemperatureUnit): void {
 }
 
 export function displayCityList(cities: readonly City[], defaultCityId: number | null): void {
-  console.log(`\n  Ciudades guardadas (${cities.length}):`);
+  printNumberedCities("Ciudades guardadas", cities, (city) =>
+    defaultCityId === city.id ? paint.defaultMarker(" (default)") : "",
+  );
+}
+
+export function displaySearchResults(cities: readonly City[], query: string): void {
+  printNumberedCities(`Resultados para «${query}»`, cities);
+}
+
+function printNumberedCities(
+  title: string,
+  cities: readonly City[],
+  marker?: (city: City) => string,
+): void {
+  console.log(`\n  ${title} (${cities.length}):`);
   for (const [index, city] of cities.entries()) {
-    const marker = defaultCityId === city.id ? paint.defaultMarker(" (default)") : "";
-    console.log(`${INDENT}${paint.menu(String(index + 1))}. ${formatCity(city)}${marker}`);
+    console.log(`${INDENT}${paint.menu(String(index + 1))}. ${formatCity(city)}${marker?.(city) ?? ""}`);
   }
   console.log();
 }

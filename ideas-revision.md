@@ -1,7 +1,7 @@
 # Revisión Weather CLI
 
 - [x] **Colores:** no hay ninguno; falta definir cyan (menú), amarillo (temp), verde/rojo (ok/error).
-- [ ] **Ciudades:** geocoding solo trae 1 resultado; nombres ambiguos pueden fallar.
+- [x] **Ciudades:** geocoding solo trae 1 resultado; nombres ambiguos pueden fallar.
 - [ ] **Tests:** no existen; conviene al menos probar storage y las APIs con mocks.
 - [ ] **Binario:** compila bien; revisar que `./src/config.ts` guarde datos en `~/.config/weather-cli/`.
 - [ ] **Escalabilidad:** ¿qué tan fácil será expandir con nuevas funcionalidades?
