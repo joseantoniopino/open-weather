@@ -114,7 +114,17 @@ export function displayGoodbye(): void {
 
 export function ask(label: string): string | null {
   const raw = prompt(label);
-  return raw === null ? null : raw;
+  if (raw !== null) {
+    clearScreen();
+  }
+  return raw;
+}
+
+/** Limpia la consola tras cada respuesta, solo en sesión interactiva. */
+function clearScreen(): void {
+  if (process.stdin.isTTY === true && process.stdout.isTTY === true) {
+    console.clear();
+  }
 }
 
 export function askText(label: string): string | null {

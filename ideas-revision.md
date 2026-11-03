@@ -7,5 +7,5 @@
 - [ ] **Escalabilidad:** ¿qué tan fácil será expandir con nuevas funcionalidades?
 - [ ] **Carga:** ¿hay estado de carga en las tareas asíncronas?
 - [ ] **7 days forecast** agregar la posibilidad de obtener el pronóstico del clima para los próximos 7 dias.
-- [ ] **CLEAR:** Cada vez que se introduce una respuesta, la consola ha de hacer un clear, solo ha de aparecer la respuesta y el menú pero nada mas
+- [x] **CLEAR:** Cada vez que se introduce una respuesta, la consola ha de hacer un clear, solo ha de aparecer la respuesta y el menú pero nada mas
 - [ ] **AGENTS.md:** dice que `index.ts` es stub, pero la app ya funciona — hay que actualizarlo. Revisar las nuevas implementaciones que hemos hecho a raíz de este archivo de revisiones
