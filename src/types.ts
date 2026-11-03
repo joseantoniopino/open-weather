@@ -18,6 +18,19 @@ export interface CurrentWeather {
   unitSymbol: string;
 }
 
+export interface DailyForecast {
+  date: string;
+  weatherCode: number;
+  temperatureMax: number;
+  temperatureMin: number;
+  precipitationProbability: number | null;
+}
+
+export interface Forecast {
+  days: DailyForecast[];
+  unitSymbol: string;
+}
+
 export interface AppConfig {
   version: 1;
   unit: TemperatureUnit;

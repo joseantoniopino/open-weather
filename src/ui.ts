@@ -1,6 +1,7 @@
 import { style } from "./colors.ts";
+import { describeWeatherCode } from "./weather-codes.ts";
 import { unitSymbol } from "./types.ts";
-import type { City, CurrentWeather, TemperatureUnit } from "./types.ts";
+import type { City, CurrentWeather, Forecast, TemperatureUnit } from "./types.ts";
 
 const MENU_WIDTH = 40;
 const INDENT = "  ";
@@ -46,6 +47,7 @@ export function displayMenu(cityCount: number, unit: TemperatureUnit): void {
     menuOption("3", "Buscar y agregar ciudad"),
     menuOption("4", "Eliminar ciudad"),
     menuOption("5", "Establecer ciudad default"),
+    menuOption("6", "Pronóstico de 7 días (todas)"),
     menuOption("8", `Ajustes (${unitSymbol(unit)})`),
     menuOption("9", "Salir"),
   ]);
@@ -87,6 +89,60 @@ export function displayCityWeather(city: City, weather: CurrentWeather): void {
   console.log(
     `  Temperatura actual: ${paint.temperature(`${weather.temperature} ${weather.unitSymbol}`)}`,
   );
+}
+
+export function displayCityForecast(city: City, forecast: Forecast): void {
+  console.log(`\n  ${paint.city(formatCity(city))}`);
+  console.log(`  Pronóstico de 7 días:`);
+  for (const day of forecast.days) {
+    console.log(
+      `  ${formatForecastDate(day.date)} · ${describeWeatherCode(day.weatherCode)} · ` +
+        `${paint.temperature(`Máx ${day.temperatureMax} ${forecast.unitSymbol}`)} · ` +
+        `${paint.temperature(`Mín ${day.temperatureMin} ${forecast.unitSymbol}`)} · ` +
+        `${formatRain(day.precipitationProbability)}`,
+    );
+  }
+}
+
+/** Fechas en español, fijadas a mano para no depender del locale del sistema. */
+const WEEKDAYS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"] as const;
+const MONTHS = [
+  "ene",
+  "feb",
+  "mar",
+  "abr",
+  "may",
+  "jun",
+  "jul",
+  "ago",
+  "sep",
+  "oct",
+  "nov",
+  "dic",
+] as const;
+
+/** Convierte `2026-11-04` en «mié 4 nov» sin desfases de zona horaria. */
+function formatForecastDate(date: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!match) {
+    return date;
+  }
+  const [, year, month, day] = match;
+  if (!year || !month || !day) {
+    return date;
+  }
+  const utc = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  if (Number.isNaN(utc.getTime())) {
+    return date;
+  }
+  const dayNumber = Number(day);
+  const weekday = WEEKDAYS[utc.getUTCDay()] ?? date;
+  const monthName = MONTHS[Number(month) - 1] ?? "";
+  return `${weekday} ${dayNumber} ${monthName}`.trim();
+}
+
+function formatRain(precipitation: number | null): string {
+  return precipitation === null ? "Lluvia —" : `Lluvia ${precipitation} %`;
 }
 
 export function formatCity(city: City): string {

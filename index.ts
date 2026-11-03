@@ -1,4 +1,4 @@
-import { ApiError, CityNotFoundError, getWeather, searchCities } from "./src/api.ts";
+import { ApiError, CityNotFoundError, getForecast, getWeather, searchCities } from "./src/api.ts";
 import {
   addCity,
   findCityById,
@@ -13,6 +13,7 @@ import {
   askNumberChoice,
   askText,
   askYesNo,
+  displayCityForecast,
   displayCityList,
   displayCityWeather,
   displayGoodbye,
@@ -25,7 +26,7 @@ import {
   printSuccess,
 } from "./src/ui.ts";
 import { unitSymbol } from "./src/types.ts";
-import type { TemperatureUnit, AppConfig, City, CurrentWeather } from "./src/types.ts";
+import type { TemperatureUnit, AppConfig, City, CurrentWeather, Forecast } from "./src/types.ts";
 
 const NO_CITY_DEFAULT_MESSAGE =
   "Aún no hay ciudad default. Usa la opción 3 para agregar una ciudad.";
@@ -58,6 +59,9 @@ async function main(): Promise<void> {
           break;
         case "5":
           await setDefaultCityInteractive(config);
+          break;
+        case "6":
+          await showAllCitiesForecast(config);
           break;
         case "8":
           await settingsLoop(config);
@@ -126,6 +130,42 @@ async function showAllCitiesWeather(config: AppConfig): Promise<void> {
       continue;
     }
     displayCityWeather(outcome.city, outcome.weather);
+  }
+}
+
+async function showAllCitiesForecast(config: AppConfig): Promise<void> {
+  const cities = config.cities;
+  if (cities.length === 0) {
+    printError("No hay ciudades guardadas. Usa la opción 3 para agregar una ciudad.");
+    return;
+  }
+  const outcomes = await Promise.all(
+    cities.map(async (city) => {
+      let forecast: Forecast | null = null;
+      let errorText: string | null = null;
+      try {
+        forecast = await getForecast(city, config.unit);
+      } catch (error) {
+        errorText =
+          error instanceof ApiError || error instanceof CityNotFoundError
+            ? error.message
+            : "No se pudo obtener el pronóstico.";
+      }
+      return { city, forecast, errorText } as {
+        city: City;
+        forecast: Forecast | null;
+        errorText: string | null;
+      };
+    }),
+  );
+
+  console.log();
+  for (const outcome of outcomes) {
+    if (outcome.errorText !== null || !outcome.forecast) {
+      printError(`${formatCity(outcome.city)}: ${outcome.errorText}`);
+      continue;
+    }
+    displayCityForecast(outcome.city, outcome.forecast);
   }
 }
 

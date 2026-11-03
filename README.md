@@ -7,6 +7,7 @@ El objetivo de esta aplicación es que creemos una aplicación de consola que pi
 - Ingresar el nombre de una ciudad.
 - Guardar la ciudad por defecto.
 - Registrar varias otras ciudades para buscar el clima en esas otras ciudades.
+- Mostrar el pronóstico de los próximos 7 días para todas las ciudades guardadas.
 
 ## Stack
 
@@ -21,6 +22,7 @@ El objetivo de esta aplicación es que creemos una aplicación de consola que pi
 ```
 https://geocoding-api.open-meteo.com/v1/search?name=Ottawa&count=1&language=es&format=json
 https://api.open-meteo.com/v1/forecast?latitude=45.41117&longitude=-75.69812&current=temperature_2m
+https://api.open-meteo.com/v1/forecast?latitude=45.41117&longitude=-75.69812&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&forecast_days=7&timezone=auto
 ```
 
 ## Inicializar proyecto
@@ -41,6 +43,7 @@ Esta es la apariencia que deseamos crear
   3. Buscar y agregar ciudad
   4. Eliminar ciudad
   5. Establecer ciudad default
+  6. Pronóstico de 7 días (todas)
   8. Ajustes (°C)
   9. Salir
 ════════════════════════════════════════
