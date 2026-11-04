@@ -3,7 +3,7 @@
 - [x] **Colores:** no hay ninguno; falta definir cyan (menú), amarillo (temp), verde/rojo (ok/error).
 - [x] **Ciudades:** geocoding solo trae 1 resultado; nombres ambiguos pueden fallar.
 - [ ] **Tests:** no existen; conviene al menos probar storage y las APIs con mocks.
-- [x] **Binario:** compila bien; revisar que `./src/config.ts` guarde datos en `~/.weather-cli/config.json`.
+- [x] **Binario:** compila bien; revisar que `./src/storage/configStorage.ts` guarde datos en `~/.weather-cli/config.json`.
 - [ ] **Escalabilidad:** ¿qué tan fácil será expandir con nuevas funcionalidades?
 - [x] **Carga:** ¿hay estado de carga en las tareas asíncronas?
 - [x] **7 days forecast** agregar la posibilidad de obtener el pronóstico del clima para los próximos 7 dias.
