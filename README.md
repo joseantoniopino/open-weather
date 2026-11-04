@@ -49,3 +49,7 @@ Esta es la apariencia que deseamos crear
 ════════════════════════════════════════
   Selecciona una opción: 5
 ```
+
+### Indicador de carga
+
+Las operaciones asíncronas (búsqueda, clima, pronóstico y guardado de configuración) muestran un spinner transitorio cuando la consola es interactiva. Si la operación termina en menos de ~150 ms no aparece nada, y la línea siempre se limpia al terminar, con éxito o con error.

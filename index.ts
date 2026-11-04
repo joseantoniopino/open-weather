@@ -1,4 +1,5 @@
 import { ApiError, CityNotFoundError, getForecast, getWeather, searchCities } from "./src/api.ts";
+import { withLoading } from "./src/loading.ts";
 import {
   addCity,
   findCityById,
@@ -31,8 +32,19 @@ import type { TemperatureUnit, AppConfig, City, CurrentWeather, Forecast } from 
 const NO_CITY_DEFAULT_MESSAGE =
   "Aún no hay ciudad default. Usa la opción 3 para agregar una ciudad.";
 
+/** Único punto de guardado; centraliza también el estado de carga. */
+function persistConfig(config: AppConfig): Promise<void> {
+  return withLoading("Guardando configuración…", () => saveConfig(config));
+}
+
+/** Etiqueta para spinner con plural automático, p. ej. «de 4 ciudades…». */
+function loadingLabel(action: string, count: number): string {
+  const noun = count === 1 ? "ciudad" : "ciudades";
+  return `${action} de ${count} ${noun}…`;
+}
+
 async function main(): Promise<void> {
-  const loaded = await loadConfig();
+  const loaded = await withLoading("Cargando configuración…", () => loadConfig());
   const config: AppConfig = loaded.config;
   if (loaded.warning) printError(loaded.warning);
   let running = true;
@@ -93,7 +105,9 @@ async function showDefaultCityWeather(config: AppConfig): Promise<void> {
     printError(NO_CITY_DEFAULT_MESSAGE);
     return;
   }
-  const weather = await getWeather(city, config.unit);
+  const weather = await withLoading(`Consultando el clima de ${city.name}…`, () =>
+    getWeather(city, config.unit),
+  );
   displayCityWeather(city, weather);
 }
 
@@ -103,24 +117,26 @@ async function showAllCitiesWeather(config: AppConfig): Promise<void> {
     printError("No hay ciudades guardadas. Usa la opción 3 para agregar una ciudad.");
     return;
   }
-  const outcomes = await Promise.all(
-    cities.map(async (city) => {
-      let weather: CurrentWeather | null = null;
-      let errorText: string | null = null;
-      try {
-        weather = await getWeather(city, config.unit);
-      } catch (error) {
-        errorText =
-          error instanceof ApiError || error instanceof CityNotFoundError
-            ? error.message
-            : "No se pudo obtener el clima.";
-      }
-      return { city, weather, errorText } as {
-        city: City;
-        weather: CurrentWeather | null;
-        errorText: string | null;
-      };
-    }),
+  const outcomes = await withLoading(loadingLabel("Consultando el clima", cities.length), () =>
+    Promise.all(
+      cities.map(async (city) => {
+          let weather: CurrentWeather | null = null;
+          let errorText: string | null = null;
+          try {
+            weather = await getWeather(city, config.unit);
+          } catch (error) {
+            errorText =
+              error instanceof ApiError || error instanceof CityNotFoundError
+                ? error.message
+                : "No se pudo obtener el clima.";
+          }
+          return { city, weather, errorText } as {
+            city: City;
+            weather: CurrentWeather | null;
+            errorText: string | null;
+          };
+        }),
+    ),
   );
 
   console.log();
@@ -139,24 +155,26 @@ async function showAllCitiesForecast(config: AppConfig): Promise<void> {
     printError("No hay ciudades guardadas. Usa la opción 3 para agregar una ciudad.");
     return;
   }
-  const outcomes = await Promise.all(
-    cities.map(async (city) => {
-      let forecast: Forecast | null = null;
-      let errorText: string | null = null;
-      try {
-        forecast = await getForecast(city, config.unit);
-      } catch (error) {
-        errorText =
-          error instanceof ApiError || error instanceof CityNotFoundError
-            ? error.message
-            : "No se pudo obtener el pronóstico.";
-      }
-      return { city, forecast, errorText } as {
-        city: City;
-        forecast: Forecast | null;
-        errorText: string | null;
-      };
-    }),
+  const outcomes = await withLoading(loadingLabel("Consultando el pronóstico", cities.length), () =>
+    Promise.all(
+      cities.map(async (city) => {
+          let forecast: Forecast | null = null;
+          let errorText: string | null = null;
+          try {
+            forecast = await getForecast(city, config.unit);
+          } catch (error) {
+            errorText =
+              error instanceof ApiError || error instanceof CityNotFoundError
+                ? error.message
+                : "No se pudo obtener el pronóstico.";
+          }
+          return { city, forecast, errorText } as {
+            city: City;
+            forecast: Forecast | null;
+            errorText: string | null;
+          };
+        }),
+    ),
   );
 
   console.log();
@@ -175,7 +193,7 @@ async function addCityInteractive(config: AppConfig): Promise<void> {
     printInfo("Búsqueda cancelada.");
     return;
   }
-  const matches = await searchCities(cityName);
+  const matches = await withLoading("Buscando ciudades…", () => searchCities(cityName));
   const city = matches.length === 1 ? matches[0] : await chooseCity(matches, cityName);
   if (!city) {
     printInfo("Búsqueda cancelada.");
@@ -186,7 +204,7 @@ async function addCityInteractive(config: AppConfig): Promise<void> {
     printError("Esa ciudad ya está guardada. Usa la opción 2 para verla.");
     return;
   }
-  await saveConfig(config);
+  await persistConfig(config);
   printSuccess(`Ciudad agregada: ${formatCity(city)}`);
   if (result.promotedToDefault) {
     printInfo(`Se estableció como ciudad default: ${formatCity(city)}`);
@@ -234,7 +252,7 @@ async function removeCityInteractive(config: AppConfig): Promise<void> {
     printError("No se pudo eliminar la ciudad.");
     return;
   }
-  await saveConfig(config);
+  await persistConfig(config);
   printSuccess(`Ciudad eliminada: ${formatCity(city)}`);
   if (result.promoted) {
     printInfo(`Nueva ciudad default: ${formatCity(result.promoted)}`);
@@ -266,7 +284,7 @@ async function setDefaultCityInteractive(config: AppConfig): Promise<void> {
     return;
   }
   setDefaultCityById(config, city.id);
-  await saveConfig(config);
+  await persistConfig(config);
   printSuccess(`Ciudad default establecida: ${formatCity(city)}`);
 }
 
@@ -284,7 +302,7 @@ async function settingsLoop(config: AppConfig): Promise<void> {
       case "1": {
         const nextUnit: TemperatureUnit = config.unit === "celsius" ? "fahrenheit" : "celsius";
         setUnit(config, nextUnit);
-        await saveConfig(config);
+        await persistConfig(config);
         printSuccess(`Unidad de temperatura actualizada a ${unitSymbol(nextUnit)}`);
         break;
       }
