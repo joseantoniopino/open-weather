@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, test } from "bun:test";
 
-import { ApiError, getWeather } from "./api.ts";
-import type { City } from "./types.ts";
+import { ApiError } from "./errors.ts";
+import { getWeather } from "./weather.ts";
+import type { City } from "../types/City.ts";
 
 const MADRID: City = {
   id: 3117735,

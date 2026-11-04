@@ -1,15 +1,12 @@
 import { copyFile, mkdir, readFile, rename } from "node:fs/promises";
-import { homedir } from "node:os";
-import path from "node:path";
-import type { AppConfig, City, TemperatureUnit } from "./types.ts";
+import type { AppConfig, LoadConfigResult, TemperatureUnit } from "../types/Config.ts";
+import type { City } from "../types/City.ts";
+import { CONFIG_DIR, CONFIG_FILE } from "../utils/constants.ts";
 
-export const CONFIG_DIR = path.join(homedir(), ".weather-cli");
-export const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
-
-interface LoadConfigResult {
-  config: AppConfig;
-  warning?: string;
-}
+/**
+ * Persistencia del archivo de configuración en `~/.weather-cli/config.json`:
+ * carga con backup si está corrupto y guardado atómico (`.json.tmp` → rename).
+ */
 
 export async function loadConfig(): Promise<LoadConfigResult> {
   let raw: string;
@@ -41,64 +38,7 @@ export async function saveConfig(config: AppConfig): Promise<void> {
   await rename(tempFile, CONFIG_FILE);
 }
 
-export function findCityById(config: AppConfig, cityId: number | null): City | null {
-  if (cityId === null) return null;
-  return config.cities.find((city) => city.id === cityId) ?? null;
-}
-
-export function addCity(config: AppConfig, city: City): { added: boolean; promotedToDefault: boolean } {
-  const duplicate = config.cities.some(
-    (existing) =>
-      existing.id === city.id ||
-      (existing.latitude === city.latitude && existing.longitude === city.longitude),
-  );
-  if (duplicate) {
-    return { added: false, promotedToDefault: false };
-  }
-  config.cities.push(city);
-  if (config.defaultCityId === null) {
-    config.defaultCityId = city.id;
-    return { added: true, promotedToDefault: true };
-  }
-  return { added: true, promotedToDefault: false };
-}
-
-export function removeCityFromConfig(
-  config: AppConfig,
-  cityId: number,
-): { removed: City | null; promoted: City | null } {
-  const index = config.cities.findIndex((city) => city.id === cityId);
-  if (index === -1) {
-    return { removed: null, promoted: null };
-  }
-  const removed = config.cities[index];
-  if (!removed) {
-    return { removed: null, promoted: null };
-  }
-  config.cities.splice(index, 1);
-  if (config.defaultCityId === cityId) {
-    config.defaultCityId = null;
-    const [nextCity] = config.cities;
-    if (nextCity) {
-      config.defaultCityId = nextCity.id;
-      return { removed, promoted: nextCity };
-    }
-  }
-  return { removed, promoted: null };
-}
-
-export function setDefaultCityById(config: AppConfig, cityId: number): City | null {
-  const city = findCityById(config, cityId);
-  if (!city) return null;
-  config.defaultCityId = city.id;
-  return city;
-}
-
-export function setUnit(config: AppConfig, unit: TemperatureUnit): void {
-  config.unit = unit;
-}
-
-function createDefaultConfig(): AppConfig {
+export function createDefaultConfig(): AppConfig {
   return {
     version: 1,
     unit: "celsius",

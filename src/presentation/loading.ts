@@ -1,6 +1,6 @@
 import { clearLine, cursorTo } from "node:readline";
 
-import { style } from "./colors.ts";
+import { style } from "../utils/colors.ts";
 
 /** Único punto de la app que dibuja y limpia el estado de carga. */
 const FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"] as const;
