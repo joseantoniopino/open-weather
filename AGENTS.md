@@ -10,8 +10,10 @@ Educational project (course exercise): a Spanish-language interactive console we
 - Install: `bun install`
 - Run: `bun run src/index.ts` (also `bun start`; `bun run dev` adds `--watch`)
 - Typecheck: `bun run typecheck` (maps to `bun check`)
-- Tests: `bun test` (Bun's built-in runner; suites are colocated next to the module they test)
-- Build: `bun run build` → `./weather-cli`
+- Tests: `bun test` (Bun's built-in runner; all suites live under `tests/`)
+- Coverage: `bun run test:coverage` (report only; no blocking threshold)
+- Verify: `bun run verify` (typecheck, then tests)
+- Build: `bun run build` → verifies first, then compiles `./weather-cli`; failures do not overwrite an existing binary
 
 No lint or CI setup exists.
 
@@ -34,19 +36,16 @@ src/
 │   ├── validation.ts       # JSON response validators (assertRecord/Number/String, asOptional*)
 │   ├── geocoding.ts        # searchCities (up to 10 Spanish-language candidates)
 │   ├── weather.ts          # getWeather, getForecast, parseDailyForecast
-│   └── client.test.ts      # Retry logic tests (fetch mocked)
 ├── presentation/           # Everything shown to or read from the user
 │   ├── menu.ts             # Menu rendering (MenuOption), main + settings menus, askMenuChoice
 │   ├── output.ts           # All display* / print* messages, displayCityList, printBlankLine, displayGoodbye
 │   ├── input.ts            # ask, askText, askNumberChoice, askYesNo; clears screen after answers
 │   ├── loading.ts          # Transient TTY-only spinner (withLoading); only module that draws/clears the loading line
 │   ├── theme.ts            # paint color palette + MENU_WIDTH/INDENT/SEPARATOR
-│   └── loading.test.ts     # Loading wrapper tests
 ├── storage/
 │   ├── configStorage.ts    # Disk: load/save the config JSON atomically, corrupted-file .bak backup, parseAppConfig validation
 │   ├── citiesStorage.ts    # City operations on AppConfig: findCityById, addCityToConfig, removeCityFromConfig, setDefaultCityById
 │   ├── settingsStorage.ts  # Preferences: setUnit, toggleUnit
-│   ├── citiesStorage.test.ts / configStorage.test.ts / settingsStorage.test.ts
 ├── types/
 │   ├── City.ts             # City, CityMatches
 │   ├── Config.ts           # AppConfig, TemperatureUnit, LoadConfigResult
@@ -59,6 +58,14 @@ src/
 │   └── weather-codes.ts    # WMO code → Spanish description
 └── index.ts                # Entrypoint: config load, main menu loop, dispatch to actions; catches known API errors and prints their Spanish messages
 ```
+
+`src/index.ts` exports `main()` for in-process tests and starts automatically only
+under `import.meta.main`. All tests are under `tests/`, mirroring the source layers,
+plus `tests/index.test.ts`, `tests/build-gate.test.ts` and `tests/e2e/cli.test.ts`.
+`bunfig.toml` sets the test root and preloads `tests/setup.ts`, which isolates HOME
+and disables colors. Shared helpers simulate fetch, prompts, console and TTY;
+storage tests use only the temporary HOME. Tests must restore global state and
+must never call the real network. Scenario documentation lives in `specs/testing/`.
 
 ## Conventions
 

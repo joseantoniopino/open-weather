@@ -31,6 +31,25 @@ https://api.open-meteo.com/v1/forecast?latitude=45.41117&longitude=-75.69812&dai
 bun init
 ```
 
+## Ejecutar, probar y compilar
+
+```bash
+bun install
+bun start
+bun test                 # Suite completa
+bun run test:coverage    # Informe de cobertura, sin umbral obligatorio
+bun run verify           # Typecheck y tests
+bun run build            # Verifica antes de compilar ./weather-cli
+```
+
+Todas las pruebas están en `tests/`: API con `fetch` simulado, almacenamiento,
+utilidades, presentación, acciones, menú principal en proceso y smoke tests del CLI.
+Usan un `HOME` temporal y no modifican `~/.weather-cli` del usuario ni consultan
+Open-Meteo. Los escenarios están documentados en `specs/testing/`.
+
+El build se detiene si falla el typecheck o cualquier test: no compila ni
+sobrescribe el binario existente. La cobertura solo informa y no bloquea por porcentaje.
+
 ### Ejemplo del menú
 Esta es la apariencia que deseamos crear
 

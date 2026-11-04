@@ -1,0 +1,8 @@
+# Bun: ejecutar solo los tests de tests/ con el entorno de pruebas compartido.
+
+[test]
+root = "tests"
+preload = ["./tests/setup.ts"]
+coverageSkipTestFiles = true
+coverageReporter = ["text"]
+coveragePathIgnorePatterns = ["tests/**"]

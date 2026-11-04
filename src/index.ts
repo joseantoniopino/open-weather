@@ -12,7 +12,10 @@ import { displayGoodbye, printBlankLine, printError } from "./presentation/outpu
 import { loadConfig } from "./storage/configStorage.ts";
 import type { AppConfig } from "./types/Config.ts";
 
-async function main(): Promise<void> {
+// Spec: specs/testing/entrypoint.feature
+// `main()` se exporta para poder probarlo en proceso; el CLI arranca por sí
+// solo únicamente cuando este módulo es el entrypoint (ejecución directa o binario).
+export async function main(): Promise<void> {
   const loaded = await withLoading("Cargando configuración…", () => loadConfig());
   const config: AppConfig = loaded.config;
   if (loaded.warning) printError(loaded.warning);
@@ -68,4 +71,6 @@ async function main(): Promise<void> {
   displayGoodbye();
 }
 
-await main();
+if (import.meta.main) {
+  await main();
+}

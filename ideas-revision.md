@@ -2,7 +2,7 @@
 
 - [x] **Colores:** no hay ninguno; falta definir cyan (menú), amarillo (temp), verde/rojo (ok/error).
 - [x] **Ciudades:** geocoding solo trae 1 resultado; nombres ambiguos pueden fallar.
-- [ ] **Tests:** no existen; conviene al menos probar storage y las APIs con mocks.
+- [x] **Tests:** suite Bun en `tests/`, APIs con mocks, almacenamiento aislado, cobertura informativa y build condicionado a typecheck y tests.
 - [x] **Binario:** compila bien; revisar que `./src/storage/configStorage.ts` guarde datos en `~/.weather-cli/config.json`.
 - [ ] **Escalabilidad:** ¿qué tan fácil será expandir con nuevas funcionalidades?
 - [x] **Carga:** ¿hay estado de carga en las tareas asíncronas?
