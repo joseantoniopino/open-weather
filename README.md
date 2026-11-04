@@ -50,6 +50,21 @@ Open-Meteo. Los escenarios están documentados en `specs/testing/`.
 El build se detiene si falla el typecheck o cualquier test: no compila ni
 sobrescribe el binario existente. La cobertura solo informa y no bloquea por porcentaje.
 
+### Publicar una versión
+
+Al subir a `main` un cambio en `package.json`, GitHub Actions lee su campo
+`version` (SemVer). Si el tag correspondiente aún no existe, ejecuta
+`bun run build` en Linux x64, macOS ARM64 y Windows x64. Solo si los tres
+builds pasan se crea el tag `v<version>` sobre ese commit y se publica una
+release con los tres binarios. Las versiones preliminares se marcan como tales.
+
+Para publicar otra versión, incrementa `version` y haz merge a `main`. Si el
+tag ya existe, el workflow no lo modifica ni vuelve a publicar la release;
+si una publicación quedó incompleta, debe revisarse manualmente. El workflow
+requiere que GitHub Actions tenga permitido escribir en el contenido del repositorio.
+En Linux y macOS puede ser necesario dar permiso de ejecución al binario descargado
+con `chmod +x <archivo>`.
+
 ### Ejemplo del menú
 Esta es la apariencia que deseamos crear
 

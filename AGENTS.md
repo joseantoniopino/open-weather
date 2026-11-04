@@ -15,7 +15,10 @@ Educational project (course exercise): a Spanish-language interactive console we
 - Verify: `bun run verify` (typecheck, then tests)
 - Build: `bun run build` → verifies first, then compiles `./weather-cli`; failures do not overwrite an existing binary
 
-No lint or CI setup exists.
+No lint setup exists. `.github/workflows/release.yml` runs on pushes to `main`
+that change `package.json`; it builds on Linux x64, macOS ARM64 and Windows x64,
+then publishes the `v<version>` tag and release assets only after all builds pass.
+An existing tag is left untouched. Update `package.json`'s SemVer version to release.
 
 ## Structure
 

@@ -27,7 +27,7 @@ describe("build condicionado a typecheck y tests", () => {
       }));
       const child = Bun.spawn([process.execPath, "run", "build"], {
         cwd: sandbox,
-        env: { ...process.env, PATH: `${path.dirname(process.execPath)}:${process.env.PATH ?? ""}` },
+        env: { ...process.env, PATH: `${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH ?? ""}` },
         stdout: "pipe",
         stderr: "pipe",
       });
