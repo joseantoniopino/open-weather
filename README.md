@@ -53,3 +53,7 @@ Esta es la apariencia que deseamos crear
 ### Indicador de carga
 
 Las operaciones asíncronas (búsqueda, clima, pronóstico y guardado de configuración) muestran un spinner transitorio cuando la consola es interactiva. Si la operación termina en menos de ~150 ms no aparece nada, y la línea siempre se limpia al terminar, con éxito o con error.
+
+### Tolerancia a fallos
+
+Las peticiones a Open-Meteo reintentan automáticamente una vez (500 ms después) cuando fallan por un motivo transitorio: sin conexión, timeout o error 5xx/429 del servidor. Así, un microcorte de red o de DNS pasa desapercibido. Los errores 4xx no se reintentan porque darían el mismo resultado.
